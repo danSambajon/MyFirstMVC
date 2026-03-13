@@ -12,17 +12,17 @@ namespace MyFirstMVC.Controllers
 {
     public class CardsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _dbContext;
 
-        public CardsController(ApplicationDbContext context)
+        public CardsController(ApplicationDbContext dbContext)
         {
-            _context = context;
+            _dbContext = dbContext;
         }
 
         // GET: Cards
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Cards.ToListAsync());
+            return View(await _dbContext.Cards.ToListAsync());
         }
 
         // GET: Cards/Details/5
@@ -33,7 +33,7 @@ namespace MyFirstMVC.Controllers
                 return NotFound();
             }
 
-            var cards = await _context.Cards
+            var cards = await _dbContext.Cards
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (cards == null)
             {
@@ -58,8 +58,8 @@ namespace MyFirstMVC.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(cards);
-                await _context.SaveChangesAsync();
+                _dbContext.Add(cards);
+                await _dbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(cards);
@@ -73,7 +73,7 @@ namespace MyFirstMVC.Controllers
                 return NotFound();
             }
 
-            var cards = await _context.Cards.FindAsync(id);
+            var cards = await _dbContext.Cards.FindAsync(id);
             if (cards == null)
             {
                 return NotFound();
@@ -97,8 +97,8 @@ namespace MyFirstMVC.Controllers
             {
                 try
                 {
-                    _context.Update(cards);
-                    await _context.SaveChangesAsync();
+                    _dbContext.Update(cards);
+                    await _dbContext.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -124,7 +124,7 @@ namespace MyFirstMVC.Controllers
                 return NotFound();
             }
 
-            var cards = await _context.Cards
+            var cards = await _dbContext.Cards
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (cards == null)
             {
@@ -139,19 +139,19 @@ namespace MyFirstMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var cards = await _context.Cards.FindAsync(id);
+            var cards = await _dbContext.Cards.FindAsync(id);
             if (cards != null)
             {
-                _context.Cards.Remove(cards);
+                _dbContext.Cards.Remove(cards);
             }
 
-            await _context.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool CardsExists(int id)
         {
-            return _context.Cards.Any(e => e.Id == id);
+            return _dbContext.Cards.Any(e => e.Id == id);
         }
     }
 }
