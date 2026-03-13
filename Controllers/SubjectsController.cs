@@ -12,17 +12,17 @@ namespace MyFirstMVC.Controllers
 {
     public class SubjectsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _dbContext;
 
-        public SubjectsController(ApplicationDbContext context)
+        public SubjectsController(ApplicationDbContext dbContext)
         {
-            _context = context;
+            _dbContext = dbContext;
         }
 
         // GET: Subjects
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Subjects.ToListAsync());
+            return View(await _dbContext.Subjects.ToListAsync());
         }
 
         // GET: Subjects/Details/5
@@ -33,7 +33,7 @@ namespace MyFirstMVC.Controllers
                 return NotFound();
             }
 
-            var subjects = await _context.Subjects
+            var subjects = await _dbContext.Subjects
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (subjects == null)
             {
@@ -58,8 +58,8 @@ namespace MyFirstMVC.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(subjects);
-                await _context.SaveChangesAsync();
+                _dbContext.Add(subjects);
+                await _dbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(subjects);
@@ -73,7 +73,7 @@ namespace MyFirstMVC.Controllers
                 return NotFound();
             }
 
-            var subjects = await _context.Subjects.FindAsync(id);
+            var subjects = await _dbContext.Subjects.FindAsync(id);
             if (subjects == null)
             {
                 return NotFound();
@@ -97,8 +97,8 @@ namespace MyFirstMVC.Controllers
             {
                 try
                 {
-                    _context.Update(subjects);
-                    await _context.SaveChangesAsync();
+                    _dbContext.Update(subjects);
+                    await _dbContext.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -124,7 +124,7 @@ namespace MyFirstMVC.Controllers
                 return NotFound();
             }
 
-            var subjects = await _context.Subjects
+            var subjects = await _dbContext.Subjects
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (subjects == null)
             {
@@ -139,19 +139,19 @@ namespace MyFirstMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var subjects = await _context.Subjects.FindAsync(id);
+            var subjects = await _dbContext.Subjects.FindAsync(id);
             if (subjects != null)
             {
-                _context.Subjects.Remove(subjects);
+                _dbContext.Subjects.Remove(subjects);
             }
 
-            await _context.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool SubjectsExists(int id)
         {
-            return _context.Subjects.Any(e => e.Id == id);
+            return _dbContext.Subjects.Any(e => e.Id == id);
         }
     }
 }
