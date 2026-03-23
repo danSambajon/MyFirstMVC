@@ -26,7 +26,7 @@ namespace MyFirstMVC.Controllers
         {
             var cards = await _dbContext.Cards.ToListAsync();
 
-            return View();
+            return View(cards);
         }
 
         // GET: Cards/Details/5
