@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - MyFirstMVC</title>
     <script type="importmap"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -45,6 +46,26 @@
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
+            @if (TempData["Success"] != null)
+            {
+                <script>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: '@TempData["Success"]'
+                    });
+                </script>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: '@TempData["Error"]'
+                    });
+                </script>
+            }
         </main>
     </div>
 

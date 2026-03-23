@@ -7,40 +7,55 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MyFirstMVC.Data;
 using MyFirstMVC.Models;
+using MyFirstMVC.ViewModels;
 
 namespace MyFirstMVC.Controllers
 {
     public class CardsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _dbContext;
+        private readonly ILogger<CardsController> _logger;
 
-        public CardsController(ApplicationDbContext context)
+        public CardsController(ApplicationDbContext dbContext, ILogger<CardsController> logger)
         {
-            _context = context;
+            _dbContext = dbContext;
+            _logger = logger;
         }
 
         // GET: Cards
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Cards.ToListAsync());
+            var cards = await _dbContext.Cards.ToListAsync();
+
+            return View(cards);
         }
 
         // GET: Cards/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
+            try
             {
-                return NotFound();
-            }
+                throw new NullReferenceException("Card not found.");
 
-            var cards = await _context.Cards
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (cards == null)
+                if (id == null)
+                {
+                    throw new NullReferenceException("Card not found.");
+                }
+
+                var cards = await _dbContext.Cards.FirstOrDefaultAsync(m => m.Id == id);
+
+                if (cards == null)
+                {
+                    throw new NullReferenceException("Card not found.");
+                }
+
+                return View(cards);
+            }
+            catch (Exception ex)
             {
-                return NotFound();
+                _logger.LogError(ex, ex.Message);
+                return RedirectToAction(nameof(Index));
             }
-
-            return View(cards);
         }
 
         // GET: Cards/Create
@@ -54,15 +69,36 @@ namespace MyFirstMVC.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Question,Answer")] Cards cards)
+        public async Task<IActionResult> Create(CardsViewModel cardsViewModel, CancellationToken cancellationToken = default)
         {
-            if (ModelState.IsValid)
+            try
             {
-                _context.Add(cards);
-                await _context.SaveChangesAsync();
+                if (!ModelState.IsValid)
+                {
+                    throw new InvalidOperationException("Invalid entry, please try again.");
+                }
+
+                var card = new Cards
+                {
+                    Question = cardsViewModel.Question,
+                    Answer = cardsViewModel.Answer
+                };
+
+                await _dbContext.AddAsync(card, cancellationToken);
+                await _dbContext.SaveChangesAsync(cancellationToken);
+
+                _logger.LogInformation("Card created successfully");
+                TempData["Success"] = "Card created successfully.";
+
                 return RedirectToAction(nameof(Index));
             }
-            return View(cards);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                TempData["Error"] = ex.Message;
+
+                return View(cardsViewModel);
+            }
         }
 
         // GET: Cards/Edit/5
@@ -73,7 +109,7 @@ namespace MyFirstMVC.Controllers
                 return NotFound();
             }
 
-            var cards = await _context.Cards.FindAsync(id);
+            var cards = await _dbContext.Cards.FindAsync(id);
             if (cards == null)
             {
                 return NotFound();
@@ -97,8 +133,8 @@ namespace MyFirstMVC.Controllers
             {
                 try
                 {
-                    _context.Update(cards);
-                    await _context.SaveChangesAsync();
+                    _dbContext.Update(cards);
+                    await _dbContext.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -124,7 +160,7 @@ namespace MyFirstMVC.Controllers
                 return NotFound();
             }
 
-            var cards = await _context.Cards
+            var cards = await _dbContext.Cards
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (cards == null)
             {
@@ -139,19 +175,19 @@ namespace MyFirstMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var cards = await _context.Cards.FindAsync(id);
+            var cards = await _dbContext.Cards.FindAsync(id);
             if (cards != null)
             {
-                _context.Cards.Remove(cards);
+                _dbContext.Cards.Remove(cards);
             }
 
-            await _context.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool CardsExists(int id)
         {
-            return _context.Cards.Any(e => e.Id == id);
+            return _dbContext.Cards.Any(e => e.Id == id);
         }
     }
 }
