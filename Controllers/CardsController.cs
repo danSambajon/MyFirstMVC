@@ -35,6 +35,8 @@ namespace MyFirstMVC.Controllers
         {
             try
             {
+                throw new NullReferenceException("Card not found.");
+
                 if (id == null)
                 {
                     throw new NullReferenceException("Card not found.");
@@ -85,11 +87,16 @@ namespace MyFirstMVC.Controllers
                 await _dbContext.AddAsync(card, cancellationToken);
                 await _dbContext.SaveChangesAsync(cancellationToken);
 
+                _logger.LogInformation("Card created successfully");
+                TempData["Success"] = "Card created successfully.";
+
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
+                TempData["Error"] = ex.Message;
+
                 return View(cardsViewModel);
             }
         }
