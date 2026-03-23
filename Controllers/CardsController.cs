@@ -34,6 +34,8 @@ namespace MyFirstMVC.Controllers
         {
             try
             {
+                throw new NullReferenceException("Card not found.");
+
                 if (id == null)
                 {
                     throw new NullReferenceException("Card not found.");
