@@ -13,34 +13,47 @@ namespace MyFirstMVC.Controllers
     public class CardsController : Controller
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly ILogger<CardsController> _logger;
 
-        public CardsController(ApplicationDbContext dbContext)
+        public CardsController(ApplicationDbContext dbContext, ILogger<CardsController> logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
         }
 
         // GET: Cards
         public async Task<IActionResult> Index()
         {
-            return View(await _dbContext.Cards.ToListAsync());
+            var cards = await _dbContext.Cards.ToListAsync();
+
+            return View();
         }
 
         // GET: Cards/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
+            try
             {
-                return NotFound();
-            }
+                if (id == null)
+                {
+                    throw new NullReferenceException("Card not found.");
+                }
 
-            var cards = await _dbContext.Cards
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (cards == null)
+                var cards = await _dbContext.Cards.FirstOrDefaultAsync(m => m.Id == id);
+
+                if (cards == null)
+                {
+                    throw new NullReferenceException("Card not found.");
+                }
+
+                return View(cards);
+            }
+            catch (Exception ex)
             {
-                return NotFound();
-            }
+                _logger.LogError(ex, ex.Message);
 
-            return View(cards);
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         // GET: Cards/Create
