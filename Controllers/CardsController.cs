@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MyFirstMVC.Data;
 using MyFirstMVC.Models;
+using MyFirstMVC.ViewModels;
 
 namespace MyFirstMVC.Controllers
 {
@@ -51,7 +52,6 @@ namespace MyFirstMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
-
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -67,15 +67,31 @@ namespace MyFirstMVC.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Question,Answer")] Cards cards)
+        public async Task<IActionResult> Create(CardsViewModel cardsViewModel, CancellationToken cancellationToken = default)
         {
-            if (ModelState.IsValid)
+            try
             {
-                _dbContext.Add(cards);
-                await _dbContext.SaveChangesAsync();
+                if (!ModelState.IsValid)
+                {
+                    throw new InvalidOperationException("Invalid entry, please try again.");
+                }
+
+                var card = new Cards
+                {
+                    Question = cardsViewModel.Question,
+                    Answer = cardsViewModel.Answer
+                };
+
+                await _dbContext.AddAsync(card, cancellationToken);
+                await _dbContext.SaveChangesAsync(cancellationToken);
+
                 return RedirectToAction(nameof(Index));
             }
-            return View(cards);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return View(cardsViewModel);
+            }
         }
 
         // GET: Cards/Edit/5
