@@ -21,7 +21,7 @@
     <table class="table">
         <thead>
             <tr>
-                <th>
+                <th class="align">
                     @Html.DisplayNameFor(model => model.Question)
                 </th>
                 <th>
@@ -36,10 +36,10 @@
             @foreach (var item in Model)
             {
                 <tr>
-                    <td>
+                    <td class="align-middle">
                         @Html.DisplayFor(modelItem => item.Question)
                     </td>
-                    <td>
+                    <td class="align-middle">
                         @Html.DisplayFor(modelItem => item.Answer)
                     </td>
                     <td>
